@@ -5,6 +5,7 @@ from typing import Any
 
 from backend.models.agent_message import AgentFinding, AgentMessage
 from backend.models.correlation import (
+    ConfidenceBreakdown,
     CorrelationInput,
     CorrelationResult,
     EvidenceConflict,
@@ -304,7 +305,9 @@ class FaultCorrelationAgent:
                         semantic_match=True,
                     )
 
-        hypotheses = self._rank_candidates(candidates, conflicts)
+        hypotheses = self._rank_candidates(
+            candidates, conflicts, telemetry_gaps=correlation_input.telemetry_gaps
+        )
         alternative_summaries = [
             f"Rank {hypothesis.rank}: {hypothesis.explanation}"
             for hypothesis in hypotheses[1:]
@@ -558,6 +561,7 @@ class FaultCorrelationAgent:
     def _rank_candidates(
         candidates: dict[tuple[str, tuple[str, ...]], dict[str, Any]],
         conflicts: list[EvidenceConflict],
+        telemetry_gaps: list[str] | None = None,
     ) -> list[RootCauseHypothesis]:
         ranked = []
         for candidate in candidates.values():
@@ -565,29 +569,178 @@ class FaultCorrelationAgent:
                 candidate["references"].values(),
                 key=lambda ref: (ref.agent, ref.finding_index),
             )
-            agents = {reference.agent for reference in evidence}
-            critical_count = sum(reference.severity == "critical" for reference in evidence)
-            confidence = 0.20 + 0.12 * len(agents)
-            confidence += 0.06 if len(candidate["devices"]) == 1 else 0.0
-            confidence += 0.12 if critical_count >= 2 else (0.06 if critical_count else 0.0)
-            confidence += 0.08 if candidate["semantic_match"] else 0.0
+            devices = sorted(candidate["devices"])
+            domain_set = {reference.agent for reference in evidence}
+            critical_domains = {
+                reference.agent
+                for reference in evidence
+                if reference.severity == "critical"
+            }
+
+            # 1. Base score
+            base_score = 0.20
+            rationale = ["Base score: +0.20."]
+
+            # 2. Cross-domain corroboration (unique agent domains only)
+            domain_corroboration = round(0.12 * len(domain_set), 2)
+            rationale.append(
+                f"Cross-domain corroboration from {len(domain_set)} distinct agent domain(s) "
+                f"({', '.join(sorted(domain_set))}): +{domain_corroboration:.2f}."
+            )
+
+            # 3. Device specificity
+            device_specificity = 0.06 if len(devices) == 1 else 0.00
+            if len(devices) == 1:
+                rationale.append(
+                    f"High device specificity targeting single device ({devices[0]}): +0.06."
+                )
+            else:
+                rationale.append(
+                    f"Multi-device or unlocalized scope ({len(devices)} devices): +0.00."
+                )
+
+            # 4. Severity factor (cross-domain critical corroboration)
+            if len(critical_domains) >= 2:
+                severity_factor = 0.12
+                rationale.append(
+                    f"Critical severity corroborated across multiple domains "
+                    f"({', '.join(sorted(critical_domains))}): +0.12."
+                )
+            elif len(critical_domains) == 1:
+                severity_factor = 0.06
+                rationale.append(
+                    f"Critical severity reported by 1 domain "
+                    f"({next(iter(critical_domains))}): +0.06."
+                )
+            else:
+                severity_factor = 0.00
+                rationale.append("Non-critical (warning/info) evidence only: +0.00.")
+
+            # 5. Semantic diagnostic match
+            semantic_match = 0.08 if candidate["semantic_match"] else 0.00
+            if candidate["semantic_match"]:
+                rationale.append(
+                    f"Pattern matches known diagnostic archetype for '{candidate['cause']}': +0.08."
+                )
+            else:
+                rationale.append("Generic or non-archetypal fault correlation pattern: +0.00.")
+
+            # 6. Missing telemetry penalty
+            candidate_dev_set = set(devices)
+            relevant_gaps = [
+                gap
+                for gap in (telemetry_gaps or [])
+                if any(dev in gap for dev in candidate_dev_set)
+                or (
+                    candidate["cause"] == "device_resource_exhaustion"
+                    and any(m in gap for m in ("cpu", "memory"))
+                )
+                or (
+                    candidate["cause"] == "interface_or_queue_drops"
+                    and any(m in gap for m in ("interface_errors", "egress_queue_drops", "packet_loss", "utilization"))
+                )
+            ]
+            telemetry_gap_penalty = min(0.15, round(0.05 * len(relevant_gaps), 2))
+            if telemetry_gap_penalty > 0:
+                rationale.append(
+                    f"Missing telemetry penalty ({len(relevant_gaps)} relevant gap(s)): "
+                    f"-{telemetry_gap_penalty:.2f}."
+                )
+            else:
+                rationale.append(
+                    "No relevant telemetry gaps detected for candidate devices: -0.00."
+                )
+
+            # 7. Temporal skew penalty
             timestamp_skew = FaultCorrelationAgent._timestamp_skew_seconds(evidence)
             if timestamp_skew is not None and timestamp_skew > _MAX_OBSERVATION_SKEW_SECONDS:
-                confidence -= 0.20
+                temporal_skew_penalty = 0.20
+                rationale.append(
+                    f"Observation temporal skew exceeds 300s window ({int(timestamp_skew)}s): -0.20."
+                )
+            else:
+                temporal_skew_penalty = 0.00
+                rationale.append(
+                    "Observation timestamps are temporally aligned within threshold: -0.00."
+                )
+
+            # 8. Contradictory evidence (conflict) penalty
             related_conflicts = [
                 conflict
                 for conflict in conflicts
-                if candidate["devices"] & set(conflict.affected_device_ids)
+                if candidate_dev_set & set(conflict.affected_device_ids)
             ]
-            confidence -= 0.25 * len(related_conflicts)
-            confidence = max(0.0, min(round(confidence, 2), 0.9))
+            conflict_penalty = round(0.25 * len(related_conflicts), 2)
+            if conflict_penalty > 0:
+                rationale.append(
+                    f"Contradictory evidence penalty ({len(related_conflicts)} conflict(s) "
+                    f"on affected device(s)): -{conflict_penalty:.2f}."
+                )
+            else:
+                rationale.append(
+                    "No contradictory evidence detected for affected device(s): -0.00."
+                )
+
+            # Raw and final scores
+            raw_score = round(
+                base_score
+                + domain_corroboration
+                + device_specificity
+                + severity_factor
+                + semantic_match
+                - telemetry_gap_penalty
+                - temporal_skew_penalty
+                - conflict_penalty,
+                2,
+            )
+            final_score = round(max(0.0, min(raw_score, 0.90)), 2)
+            rationale.append(
+                f"Final bounded confidence score: {final_score:.2f} (raw: {raw_score:.2f}, capped at 0.90)."
+            )
+
+            breakdown = ConfidenceBreakdown(
+                base_score=base_score,
+                domain_corroboration=domain_corroboration,
+                device_specificity=device_specificity,
+                severity_factor=severity_factor,
+                semantic_match=semantic_match,
+                telemetry_gap_penalty=telemetry_gap_penalty,
+                temporal_skew_penalty=temporal_skew_penalty,
+                conflict_penalty=conflict_penalty,
+                raw_score=raw_score,
+                final_score=final_score,
+                rationale=rationale,
+            )
+
+            # Uncertainties
+            candidate_uncertainties = [
+                "Confidence is a deterministic heuristic, not a calibrated probability.",
+                "Correlated findings alone do not prove causation.",
+            ]
+            if timestamp_skew is not None and timestamp_skew > _MAX_OBSERVATION_SKEW_SECONDS:
+                candidate_uncertainties.append(
+                    "Supporting measurements span more than five minutes; temporal alignment is weak."
+                )
+            if any(reference.observed_at is None for reference in evidence):
+                candidate_uncertainties.append(
+                    "Some supporting findings have no observation timestamp, so temporal alignment could not be checked."
+                )
+            for conflict in related_conflicts:
+                candidate_uncertainties.append(conflict.description)
+            if relevant_gaps:
+                candidate_uncertainties.append(
+                    f"Missing telemetry observed: {', '.join(relevant_gaps[:2])}"
+                )
+
             ranked.append(
                 {
                     "cause": candidate["cause"],
                     "explanation": candidate["explanation"],
-                    "confidence": confidence,
+                    "confidence": final_score,
+                    "confidence_breakdown": breakdown,
                     "evidence": evidence,
-                    "affected_device_ids": sorted(candidate["devices"]),
+                    "affected_device_ids": devices,
+                    "uncertainties": candidate_uncertainties,
                 }
             )
 
@@ -607,6 +760,7 @@ class FaultCorrelationAgent:
                     cause=item["cause"],
                     explanation=item["explanation"],
                     confidence=item["confidence"],
+                    confidence_breakdown=item["confidence_breakdown"],
                     evidence=item["evidence"],
                     affected_device_ids=item["affected_device_ids"],
                     affected_link_ids=sorted(
@@ -623,22 +777,7 @@ class FaultCorrelationAgent:
                             for segment_id in reference.affected_segment_ids
                         }
                     ),
-                    uncertainties=[
-                        "Confidence is a deterministic heuristic, not a calibrated probability.",
-                        "Correlated findings alone do not prove causation.",
-                    ]
-                    + ([
-                        "Supporting measurements span more than five minutes; temporal alignment is weak."
-                    ] if timestamp_skew is not None and timestamp_skew > _MAX_OBSERVATION_SKEW_SECONDS else [])
-                    + ([
-                        "Some supporting findings have no observation timestamp, so temporal alignment could not be checked."
-                    ] if any(reference.observed_at is None for reference in evidence) else [])
-                    + [
-                        conflict.description
-                        for conflict in conflicts
-                        if set(item["affected_device_ids"])
-                        & set(conflict.affected_device_ids)
-                    ],
+                    uncertainties=item["uncertainties"],
                 )
             )
         return hypotheses

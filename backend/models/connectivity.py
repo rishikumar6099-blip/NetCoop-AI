@@ -4,6 +4,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from backend.services.interoperability import (
+    normalize_connectivity_payload,
+    normalize_device_payload,
+    normalize_link_payload,
+    validate_schema_version,
+)
 
 Reachability = Literal["reachable", "unreachable", "unknown"]
 LinkStatus = Literal["up", "down", "unknown"]
@@ -27,13 +33,15 @@ class TopologyDevice(BaseModel):
     segment_id: str | None = None
     reachability: Reachability | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_input(cls, data: object) -> object:
+        return normalize_device_payload(data)
+
     @field_validator("device_id", "segment_id")
     @classmethod
     def clean_identifiers(cls, value: str | None) -> str | None:
         return _clean_identifier(value)
-
-
-from backend.services.interoperability import validate_schema_version
 
 
 class TopologyLink(BaseModel):
@@ -46,6 +54,11 @@ class TopologyLink(BaseModel):
     target_device_id: str = Field(min_length=1)
     status: LinkStatus = "unknown"
     medium: Literal["ethernet", "wifi", "fiber", "unknown"] = "unknown"
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_input(cls, data: object) -> object:
+        return normalize_link_payload(data)
 
     @field_validator("link_id", "source_device_id", "target_device_id")
     @classmethod
@@ -65,6 +78,11 @@ class ConnectivityTelemetry(BaseModel):
     diagnosis_id: str = Field(min_length=1)
     devices: list[TopologyDevice] = Field(default_factory=list)
     links: list[TopologyLink] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_input(cls, data: object) -> object:
+        return normalize_connectivity_payload(data)
 
     @field_validator("schema_version")
     @classmethod

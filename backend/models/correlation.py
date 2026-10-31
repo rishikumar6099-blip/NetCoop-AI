@@ -57,6 +57,24 @@ class EvidenceReference(BaseModel):
     affected_segment_ids: list[str] = Field(default_factory=list)
 
 
+class ConfidenceBreakdown(BaseModel):
+    """Itemised, deterministic calculation of hypothesis confidence."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    base_score: float = Field(ge=0, le=1)
+    domain_corroboration: float = Field(ge=0, le=1)
+    device_specificity: float = Field(ge=0, le=1)
+    severity_factor: float = Field(ge=0, le=1)
+    semantic_match: float = Field(ge=0, le=1)
+    telemetry_gap_penalty: float = Field(ge=0, le=1)
+    temporal_skew_penalty: float = Field(ge=0, le=1)
+    conflict_penalty: float = Field(ge=0, le=1)
+    raw_score: float
+    final_score: float = Field(ge=0, le=1)
+    rationale: list[str] = Field(default_factory=list)
+
+
 class RootCauseHypothesis(BaseModel):
     """A ranked cause candidate supported by source finding references."""
 
@@ -66,6 +84,7 @@ class RootCauseHypothesis(BaseModel):
     cause: str
     explanation: str
     confidence: float = Field(ge=0, le=1)
+    confidence_breakdown: ConfidenceBreakdown | None = None
     evidence: list[EvidenceReference] = Field(min_length=2)
     affected_device_ids: list[str] = Field(default_factory=list)
     affected_link_ids: list[str] = Field(default_factory=list)

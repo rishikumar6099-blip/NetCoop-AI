@@ -235,3 +235,6 @@ frontend/*.local
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local SQLite database
+backend/data/*.db

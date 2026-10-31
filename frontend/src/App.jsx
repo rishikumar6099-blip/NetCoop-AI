@@ -17,6 +17,7 @@ function Router() {
       <Route path="/dashboard/infrastructure" component={Dashboard} />
       <Route path="/dashboard/agents" component={Dashboard} />
       <Route path="/dashboard/communication" component={Dashboard} />
+      <Route path="/dashboard/interop" component={Dashboard} />
       <Route path="/dashboard/diagnose" component={Dashboard} />
       <Route path="/dashboard/reports" component={Dashboard} />
       <Route path="/404" component={NotFound} />

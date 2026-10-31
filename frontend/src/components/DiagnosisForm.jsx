@@ -11,6 +11,7 @@ import {
   Wifi,
 } from 'lucide-react'
 import { buildDiagnosisRequest, describeApiError, submitDiagnosis } from '../services/diagnosisApi.js'
+import { SCENARIO_PRESETS } from '../data/scenarioPresets.js'
 
 const performanceFields = [
   { name: 'latency_ms', label: 'Latency', suffix: 'ms', min: 0, step: 'any' },
@@ -262,8 +263,46 @@ function DiagnosisForm({ onRunState }) {
     }
   }
 
+  function loadScenarioPreset(preset) {
+    setDiagnosisId(`diag-${preset.id}-${Date.now().toString(36).slice(-4)}`)
+    setPerformanceSamples(
+      preset.data.performanceSamples.map((s) => ({ ...blankPerformanceSample(), ...s }))
+    )
+    setInfrastructureSamples(
+      preset.data.infrastructureSamples.map((s) => ({ ...blankInfrastructureSample(), ...s }))
+    )
+    setDevices(preset.data.devices.map((d) => ({ ...blankDevice(), ...d })))
+    setLinks(preset.data.links.map((l) => ({ ...blankLink(), ...l })))
+    setErrors([])
+  }
+
   return (
     <form className="diagnosis-request-form" noValidate onSubmit={handleSubmit}>
+      <div className="diagnosis-preset-panel" style={{ background: 'rgba(30, 27, 75, 0.45)', border: '1px solid rgba(139, 92, 246, 0.25)', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <b style={{ color: '#c4b5fd', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldCheck size={14} color="#818cf8" /> Core Hackathon Scenarios (1-Click Presets)
+            </b>
+            <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#94a3b8' }}>Load pre-calibrated scenario telemetry to test multi-agent diagnosis instantly.</p>
+          </div>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {SCENARIO_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                className="button"
+                style={{ fontSize: '11px', padding: '4px 10px', height: 'auto', background: 'rgba(99, 102, 241, 0.2)', borderColor: 'rgba(99, 102, 241, 0.4)', color: '#e2e8f0', borderRadius: '6px', cursor: 'pointer' }}
+                onClick={() => loadScenarioPreset(preset)}
+                title={preset.description}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="diagnosis-id-panel">
         <div><span className="diagnosis-id-panel__icon"><GitBranch size={17} /></span><span><b>Diagnosis ID</b><small>Shared across all three telemetry sections</small></span></div>
         <code>{diagnosisId}</code>

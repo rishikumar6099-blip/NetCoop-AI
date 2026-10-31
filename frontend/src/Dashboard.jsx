@@ -12,6 +12,8 @@ import {
 import { useLocation } from 'wouter'
 import { DiagnosisRunContext } from './contexts/DiagnosisContext'
 import DiagnosisForm from './components/DiagnosisForm.jsx'
+import InteropValidator from './components/InteropValidator.jsx'
+import { checkBackendHealth, getDiagnosisHistory, getDiagnosisById } from './services/diagnosisApi.js'
 import './Dashboard.css'
 
 const navigation = [
@@ -20,6 +22,7 @@ const navigation = [
   { id: 'infrastructure', label: 'Infrastructure', icon: Server, group: 'OPERATIONS' },
   { id: 'agents', label: 'AI Agents', icon: Sparkles, group: 'INTELLIGENCE' },
   { id: 'communication', label: 'Agent Communication', icon: Waypoints, group: 'INTELLIGENCE' },
+  { id: 'interop', label: 'Interop Validator', icon: FileJson, group: 'INTELLIGENCE' },
   { id: 'diagnosis', label: 'Run Diagnosis', icon: ScanSearch, group: 'DIAGNOSE' },
   { id: 'reports', label: 'Diagnostic Reports', icon: FileText, group: 'DIAGNOSE' },
 ]
@@ -30,6 +33,7 @@ const pagePaths = {
   infrastructure: '/dashboard/infrastructure',
   agents: '/dashboard/agents',
   communication: '/dashboard/communication',
+  interop: '/dashboard/interop',
   diagnosis: '/dashboard/diagnose',
   reports: '/dashboard/reports',
 }
@@ -83,7 +87,7 @@ const demoMessages = [
 
 const titles = {
   overview: 'Overview', analytics: 'Network analytics', infrastructure: 'Infrastructure',
-  agents: 'AI agent roster', communication: 'Agent communication', diagnosis: 'Run a diagnosis', reports: 'Diagnostic reports',
+  agents: 'AI agent roster', communication: 'Agent communication', interop: 'Interoperability validator', diagnosis: 'Run a diagnosis', reports: 'Diagnostic reports',
 }
 
 function DemoFlag({ compact = false }) { return <span className={`demo-flag${compact ? ' demo-flag--compact' : ''}`}><i /> Illustrative data</span> }
@@ -238,17 +242,228 @@ function ActualReportCard({ report }) {
     <div className="report-entity-grid">{[['Affected devices', report.affected_device_ids], ['Affected links', report.affected_link_ids], ['Affected segments', report.affected_segment_ids]].map(([label, values]) => <div key={label}><span>{label}</span><div>{values?.length ? values.map((value) => <code key={value}>{value}</code>) : <small>None reported</small>}</div></div>)}</div>
     <div className="report-detail-grid"><div><h4>Supporting evidence</h4><EvidenceList evidence={report.supporting_evidence} /></div><div><h4>Recommended actions</h4>{report.recommended_actions?.length ? <div className="report-action-list">{report.recommended_actions.map((item, index) => <article key={`${item.action}-${index}`}><span className={`priority-mark priority-mark--${item.priority}`}>{item.priority}</span><p>{item.action}</p></article>)}</div> : <p className="empty-copy">No corrective actions were reported.</p>}</div></div>
     {report.conflicts?.length > 0 && <div className="report-conflict"><b><AlertTriangle size={16} /> Conflicting evidence</b>{report.conflicts.map((item, index) => <p key={`${item.description}-${index}`}>{item.description}<small>{item.evidence.map((ref) => `${ref.agent}.findings[${ref.finding_index}]`).join(' · ')}</small></p>)}</div>}
+    {report.confidence_breakdown && (
+      <details className="report-uncertainty" style={{ marginTop: '12px' }} open>
+        <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#c4b5fd' }}>
+          Explainable Confidence Breakdown ({Math.round(report.confidence_breakdown.final_score * 100)}%)
+        </summary>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', margin: '10px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Base Score:</span> <b style={{ color: '#e2e8f0' }}>{report.confidence_breakdown.base_score.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Corroboration:</span> <b style={{ color: '#4ade80' }}>+{report.confidence_breakdown.agent_corroboration.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Specificity:</span> <b style={{ color: '#60a5fa' }}>+{report.confidence_breakdown.device_specificity.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Severity:</span> <b style={{ color: '#a78bfa' }}>+{report.confidence_breakdown.severity_boost.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Semantic:</span> <b style={{ color: '#38bdf8' }}>+{report.confidence_breakdown.semantic_match.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#f87171' }}>Missing Tel:</span> <b style={{ color: '#f87171' }}>-{report.confidence_breakdown.missing_telemetry_penalty.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#f87171' }}>Time Skew:</span> <b style={{ color: '#f87171' }}>-{report.confidence_breakdown.temporal_skew_penalty.toFixed(2)}</b>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: '11px', color: '#f87171' }}>Contradictions:</span> <b style={{ color: '#f87171' }}>-{report.confidence_breakdown.contradictory_evidence_penalty.toFixed(2)}</b>
+          </div>
+        </div>
+        {report.confidence_breakdown.rationale?.length > 0 && (
+          <div style={{ marginTop: '6px' }}>
+            <b style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>Deterministic Scoring Rationale</b>
+            <ul style={{ margin: '4px 0 0 16px', padding: 0, fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' }}>
+              {report.confidence_breakdown.rationale.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </details>
+    )}
     {(report.alternative_explanations?.length > 0 || report.uncertainties?.length > 0 || report.limitations?.length > 0) && <details className="report-uncertainty"><summary>Alternatives, uncertainty and limitations</summary>{report.alternative_explanations?.map((item, index) => <p key={`alt-${index}`}>{item}</p>)}{report.uncertainties?.map((item, index) => <p key={`unc-${index}`}>{item}</p>)}{report.limitations?.map((item, index) => <p key={`lim-${index}`}>{item}</p>)}</details>}
     <div className="report-sources"><b>Evidence sources</b><span>{report.evidence_sources?.length ? report.evidence_sources.join(' · ') : 'No source list reported'}</span></div>
   </section>
 }
 
 function ReportsPage({ diagnosisRun, onNavigate }) {
-  const report = diagnosisRun?.response?.diagnostic_report
+  const [historyRecords, setHistoryRecords] = useState([])
+  const [selectedReport, setSelectedReport] = useState(null)
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [loadingReportId, setLoadingReportId] = useState(null)
+  const [page, setPage] = useState(0)
+  const pageSize = 5
+  const [total, setTotal] = useState(0)
+
+  const fetchHistory = (pageNum = page) => {
+    setLoadingHistory(true)
+    getDiagnosisHistory({ limit: pageSize, offset: pageNum * pageSize })
+      .then((data) => {
+        if (data?.items) {
+          setHistoryRecords(data.items)
+          setTotal(typeof data.total === 'number' ? data.total : data.items.length)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false))
+  }
+
+  useEffect(() => {
+    fetchHistory(page)
+  }, [diagnosisRun, page])
+
+  const handleSelectRecord = async (diagnosisId) => {
+    setLoadingReportId(diagnosisId)
+    try {
+      const record = await getDiagnosisById(diagnosisId)
+      if (record?.diagnostic_report) {
+        const rep = { ...record.diagnostic_report }
+        if (!rep.confidence_breakdown && record.confidence_breakdown) {
+          rep.confidence_breakdown = record.confidence_breakdown
+        }
+        setSelectedReport(rep)
+      } else if (record) {
+        setSelectedReport({
+          diagnosis_id: record.diagnosis_id,
+          status: record.status,
+          incident_status: record.incident_status || 'unknown',
+          probable_root_cause: record.probable_root_cause || 'No root cause established',
+          confidence_score: record.confidence_score,
+          confidence_category: record.confidence_category || 'low',
+          confidence_breakdown: record.confidence_breakdown,
+          affected_device_ids: record.affected_device_ids || [],
+          affected_link_ids: record.affected_link_ids || [],
+          affected_segment_ids: record.affected_segment_ids || [],
+          supporting_evidence: record.findings?.map((f) => ({
+            agent: f.agent,
+            finding_index: f.finding_index,
+            metric: f.metric,
+            value: f.value,
+            assessment: f.assessment,
+            device_id: f.device_id,
+          })) || [],
+          recommended_actions: [],
+          limitations: ['Historical record retrieved from SQLite.'],
+        })
+      }
+    } catch (err) {
+      console.error('Failed to load diagnosis record:', err)
+    } finally {
+      setLoadingReportId(null)
+    }
+  }
+
+  const activeReport = selectedReport || diagnosisRun?.response?.diagnostic_report
+
   return <>
-    <PageHeader kicker="DIAGNOSE / REPORT REVIEW" title="Reports with the evidence attached." description="Inspect the latest report returned by the backend. This prototype does not store a report history service." action={report ? <span className="actual-data-tag"><i /> LATEST API REPORT</span> : null} />
-    {report ? <ActualReportCard report={report} /> : <div className="report-empty"><span><FileText size={24} /></span><div><b>No API report in this session yet</b><p>Run a diagnosis to review its root cause, confidence, affected entities and evidence here.</p><button className="primary-action" type="button" onClick={() => onNavigate('diagnosis')}><ScanSearch size={16} /> Run a diagnosis</button></div></div>}
-    <Panel title="Example activity" subtitle="Illustrative records · not backend history" action={<DemoFlag compact />} className="sample-activity"><ActivityList rows={activityRows} /></Panel>
+    <PageHeader
+      kicker="DIAGNOSE / REPORT REVIEW"
+      title="Reports with the evidence attached."
+      description="Inspect live API diagnosis reports or historical records persisted in SQLite."
+      action={activeReport ? <span className="actual-data-tag"><i /> {selectedReport ? 'HISTORICAL SQLITE REPORT' : 'LATEST API REPORT'}</span> : null}
+    />
+    {activeReport ? (
+      <div>
+        {selectedReport && (
+          <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+              Viewing record <b>{selectedReport.diagnosis_id}</b> from SQLite database.
+            </span>
+            <button className="button button--secondary" style={{ fontSize: '11px', padding: '3px 8px' }} onClick={() => setSelectedReport(null)}>
+              Clear selection (show latest)
+            </button>
+          </div>
+        )}
+        <ActualReportCard report={activeReport} />
+      </div>
+    ) : (
+      <div className="report-empty">
+        <span><FileText size={24} /></span>
+        <div>
+          <b>No API report in this session yet</b>
+          <p>Run a diagnosis or select a historical record from the persistent SQLite database below.</p>
+          <button className="primary-action" type="button" onClick={() => onNavigate('diagnosis')}>
+            <ScanSearch size={16} /> Run a diagnosis
+          </button>
+        </div>
+      </div>
+    )}
+
+    <Panel
+      title="Persistent SQLite Diagnosis History"
+      subtitle={`${total} total records in database · ${historyRecords.length} on this page · click any row to load full report`}
+      action={<button className="button button--secondary" style={{ fontSize: '11px', padding: '4px 10px' }} onClick={() => fetchHistory(page)}>Refresh</button>}
+      className="sample-activity"
+    >
+      {historyRecords.length > 0 ? (
+        <>
+          <div className="activity-list">
+            {historyRecords.map((row) => (
+              <article
+                className="activity-row"
+                key={row.diagnosis_id}
+                onClick={() => handleSelectRecord(row.diagnosis_id)}
+                style={{ cursor: 'pointer', opacity: loadingReportId === row.diagnosis_id ? 0.6 : 1 }}
+                title="Click to inspect this report in the viewer above"
+              >
+                <span className={`activity-row__severity activity-row__severity--${row.incident_status === 'no_fault_detected' ? 'info' : row.confidence_category === 'high' ? 'high' : 'medium'}`}>
+                  <i />{row.confidence_category || row.status}
+                </span>
+                <div className="activity-row__main">
+                  <b>{row.probable_root_cause || (row.incident_status?.replaceAll('_', ' ') || 'No cause reported')}</b>
+                  <small>{row.diagnosis_id} <i>·</i> {row.affected_device_ids?.join(', ') || 'No devices affected'}</small>
+                </div>
+                <div className="activity-row__cause">
+                  <span>{row.confidence_score != null ? `${Math.round(row.confidence_score * 100)}% confidence` : row.status}</span>
+                  <small>{new Date(row.created_at).toLocaleTimeString()} · SQLITE</small>
+                </div>
+                {loadingReportId === row.diagnosis_id ? (
+                  <span style={{ fontSize: '11px', color: '#818cf8' }}>Loading...</span>
+                ) : (
+                  <ArrowUpRight size={16} />
+                )}
+              </article>
+            ))}
+          </div>
+          {total > pageSize && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} of {total} records
+              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="button button--secondary"
+                  style={{ fontSize: '11px', padding: '3px 10px', height: 'auto', cursor: page === 0 || loadingHistory ? 'not-allowed' : 'pointer', opacity: page === 0 || loadingHistory ? 0.5 : 1 }}
+                  disabled={page === 0 || loadingHistory}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  Previous
+                </button>
+                <span style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                  Page {page + 1} of {Math.ceil(total / pageSize) || 1}
+                </span>
+                <button
+                  type="button"
+                  className="button button--secondary"
+                  style={{ fontSize: '11px', padding: '3px 10px', height: 'auto', cursor: (page + 1) * pageSize >= total || loadingHistory ? 'not-allowed' : 'pointer', opacity: (page + 1) * pageSize >= total || loadingHistory ? 0.5 : 1 }}
+                  disabled={(page + 1) * pageSize >= total || loadingHistory}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="empty-copy">{loadingHistory ? 'Retrieving persistent history...' : 'No diagnosis history stored yet. Run a diagnosis above to persist records to SQLite.'}</p>
+      )}
+    </Panel>
     <DashboardFootnote />
   </>
 }
@@ -307,9 +522,9 @@ function Dashboard() {
   useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 1000); return () => window.clearInterval(timer) }, [])
   useEffect(() => {
     const controller = new AbortController()
-    fetch('/health', { signal: controller.signal })
-      .then((response) => setApiReachable(response.ok))
-      .catch((error) => { if (error.name !== 'AbortError') setApiReachable(false) })
+    checkBackendHealth({ signal: controller.signal })
+      .then((healthy) => setApiReachable(healthy))
+      .catch(() => setApiReachable(false))
     return () => controller.abort()
   }, [])
   const activePage = Object.entries(pagePaths).find(([, path]) => path === location)?.[0] || 'overview'
@@ -322,6 +537,7 @@ function Dashboard() {
       case 'infrastructure': return <InfrastructurePage />
       case 'agents': return <AgentsPage diagnosisRun={diagnosisRun} onNavigate={navigate} />
       case 'communication': return <CommunicationPage diagnosisRun={diagnosisRun} />
+      case 'interop': return <InteropValidator />
       case 'diagnosis': return <DiagnosisPage lastRun={diagnosisRun} onRunState={setDiagnosisRun} />
       case 'reports': return <ReportsPage diagnosisRun={diagnosisRun} onNavigate={navigate} />
       default: return <OverviewPage diagnosisRun={diagnosisRun} onNavigate={navigate} />

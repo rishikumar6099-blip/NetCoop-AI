@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/$/, '')
+export const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/$/, '')
 
 export class DiagnosisApiError extends Error {
   constructor(message, { kind = 'unexpected', status = null, body = null, cause = null } = {}) {
@@ -133,8 +133,9 @@ export async function submitDiagnosis(request, { signal } = {}) {
     })
   } catch (error) {
     if (error?.name === 'AbortError') throw error
+    const targetDesc = API_BASE_URL ? ` at ${API_BASE_URL}` : ' on 127.0.0.1:8000'
     throw new DiagnosisApiError(
-      'Could not connect to the NetCoop AI backend. Check that FastAPI is running on 127.0.0.1:8000.',
+      `Could not connect to the NetCoop AI backend${targetDesc}. Check that the FastAPI service is active.`,
       { kind: 'connection', cause: error },
     )
   }
@@ -210,3 +211,75 @@ export function describeApiError(error) {
     body: error.body,
   }
 }
+
+export async function checkBackendHealth({ signal } = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, { signal })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
+export async function getDiagnosisHistory({ limit = 20, offset = 0 } = {}, { signal } = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/diagnoses?limit=${limit}&offset=${offset}`, {
+      headers: { Accept: 'application/json' },
+      signal,
+    })
+    if (!response.ok) {
+      throw new DiagnosisApiError(`Failed to fetch history (HTTP ${response.status})`, {
+        kind: 'http',
+        status: response.status,
+      })
+    }
+    return await response.json()
+  } catch (error) {
+    if (error instanceof DiagnosisApiError) throw error
+    throw new DiagnosisApiError('Failed to retrieve diagnosis history from backend.', {
+      kind: 'connection',
+      cause: error,
+    })
+  }
+}
+
+export async function getDiagnosisById(diagnosisId, { signal } = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/diagnoses/${encodeURIComponent(diagnosisId)}`, {
+      headers: { Accept: 'application/json' },
+      signal,
+    })
+    if (!response.ok) {
+      throw new DiagnosisApiError(`Diagnosis '${diagnosisId}' not found (HTTP ${response.status})`, {
+        kind: 'http',
+        status: response.status,
+      })
+    }
+    return await response.json()
+  } catch (error) {
+    if (error instanceof DiagnosisApiError) throw error
+    throw new DiagnosisApiError(`Failed to retrieve diagnosis '${diagnosisId}'.`, {
+      kind: 'connection',
+      cause: error,
+    })
+  }
+}
+
+export async function validateInteroperability({ domain, payload, schema_version }, { signal } = {}) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/interop/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ domain, payload, schema_version }),
+      signal,
+    })
+    const body = await response.json()
+    return body
+  } catch (error) {
+    throw new DiagnosisApiError('Interoperability validation failed to connect to backend.', {
+      kind: 'connection',
+      cause: error,
+    })
+  }
+}
+

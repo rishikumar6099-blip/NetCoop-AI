@@ -1,0 +1,36 @@
+services:
+  # NetCoop AI FastAPI Backend Web Service
+  - type: web
+    name: netcoop-ai-backend
+    runtime: python
+    region: oregon
+    plan: standard
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    disk:
+      name: netcoop-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: NETCOOP_DB_PATH
+        value: /var/data/netcoop.db
+      - key: ALLOWED_ORIGINS
+        value: "*"
+
+  # NetCoop AI React + Vite Frontend Static Site
+  - type: web
+    name: netcoop-ai-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

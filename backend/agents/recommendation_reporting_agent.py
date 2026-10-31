@@ -146,6 +146,7 @@ class RecommendationReportingAgent:
             )
 
         confidence_score = primary.confidence if primary else None
+        confidence_breakdown = primary.confidence_breakdown if primary and not no_fault else None
         return DiagnosticReport(
             diagnosis_id=correlation.diagnosis_id,
             incident_status=("no_fault_detected" if no_fault else (
@@ -160,6 +161,7 @@ class RecommendationReportingAgent:
                 if no_fault
                 else self._confidence_category(confidence_score, insufficient)
             ),
+            confidence_breakdown=confidence_breakdown,
             affected_device_ids=identifiers["devices"],
             affected_link_ids=identifiers["links"],
             affected_segment_ids=identifiers["segments"],

@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from backend.models.correlation import (
+    ConfidenceBreakdown,
     EvidenceConflict,
     EvidenceReference,
     RootCauseHypothesis,
@@ -36,6 +37,7 @@ class DiagnosticReport(BaseModel):
     confidence_category: Literal[
         "high", "moderate", "low", "insufficient", "not_applicable"
     ]
+    confidence_breakdown: ConfidenceBreakdown | None = None
     affected_device_ids: list[str] = Field(default_factory=list)
     affected_link_ids: list[str] = Field(default_factory=list)
     affected_segment_ids: list[str] = Field(default_factory=list)
