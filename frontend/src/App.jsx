@@ -1,23 +1,50 @@
-import './App.css'
+import { lazy, Suspense, useState } from "react";
+import { Route, Switch } from "wouter";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { DiagnosisRunContext } from "./contexts/DiagnosisContext";
+import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
 
-function App() {
+const Dashboard = lazy(() => import("./Dashboard.jsx"));
+
+function Router() {
   return (
-    <main className="min-h-svh bg-slate-950 text-slate-100">
-      <div className="mx-auto flex min-h-svh max-w-6xl items-center justify-center px-6">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-cyan-400">
-            NetCoop AI
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Network fault diagnosis
-          </h1>
-          <p className="mt-4 max-w-xl text-slate-400">
-            Frontend workspace ready for the project interface.
-          </p>
-        </div>
-      </div>
-    </main>
-  )
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/dashboard/analytics" component={Dashboard} />
+      <Route path="/dashboard/infrastructure" component={Dashboard} />
+      <Route path="/dashboard/agents" component={Dashboard} />
+      <Route path="/dashboard/communication" component={Dashboard} />
+      <Route path="/dashboard/diagnose" component={Dashboard} />
+      <Route path="/dashboard/reports" component={Dashboard} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
+  );
 }
 
-export default App
+export default function App() {
+  const [diagnosisRun, setDiagnosisRun] = useState(null);
+  const dashboardFallback = (
+    <div className="min-h-screen bg-[#030305] px-6 py-12 text-center text-white/65 flex items-center justify-center">
+      <div className="flex items-center gap-3">
+        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping" />
+        <span style={{ fontFamily: "'Outfit', sans-serif" }}>Opening Network Operations…</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="dark">
+        <DiagnosisRunContext.Provider value={{ diagnosisRun, setDiagnosisRun }}>
+          <Suspense fallback={dashboardFallback}>
+            <Router />
+          </Suspense>
+        </DiagnosisRunContext.Provider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}

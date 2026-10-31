@@ -1,1 +1,256 @@
-/* Add app-specific styles here. Tailwind utilities are available in components. */
+.orbitly-home {
+  --orbitly-ink: #f7f5ff;
+  --orbitly-muted: rgba(235, 231, 250, .64);
+  --orbitly-dim: rgba(221, 214, 242, .42);
+  --orbitly-line: rgba(203, 190, 255, .1);
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--orbitly-ink);
+  background: #030305;
+}
+
+.orbitly-nav { position: fixed; z-index: 50; inset: 0 0 auto; padding: 16px 0; border-bottom: 1px solid transparent; transition: background .25s ease, border-color .25s ease, padding .25s ease; }
+.orbitly-nav--scrolled { padding: 10px 0; border-color: rgba(255,255,255,.07); background: rgba(3,3,5,.86); backdrop-filter: blur(20px) saturate(150%); }
+.orbitly-nav__inner { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: 22px; }
+.orbitly-brand { display: inline-flex; align-items: center; gap: 10px; color: white; text-decoration: none; }
+.orbitly-brand > span { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(129,140,248,.34); border-radius: 11px; color: #c4b5fd; background: linear-gradient(145deg,rgba(99,102,241,.25),rgba(139,92,246,.09)); box-shadow: 0 5px 28px rgba(99,102,241,.15); }
+.orbitly-brand b { font: 700 17px/1 'Outfit', sans-serif; letter-spacing: -.035em; }
+.orbitly-brand i { color: #a5b4fc; font-style: normal; }
+.orbitly-nav__links { display: flex; align-items: center; gap: 6px; }
+.orbitly-nav__links a { padding: 9px 13px; border-radius: 9px; color: rgba(255,255,255,.58); font-size: 13px; text-decoration: none; transition: color .2s, background .2s; }
+.orbitly-nav__links a:hover { color: white; background: rgba(255,255,255,.06); }
+.orbitly-nav__cta { display: inline-flex; min-height: 42px; align-items: center; gap: 8px; padding: 0 16px; border-radius: 11px; color: white; font-size: 13px; font-weight: 600; text-decoration: none; }
+.orbitly-nav__toggle { display: none; padding: 8px; border: 1px solid var(--orbitly-line); border-radius: 10px; color: white; background: rgba(255,255,255,.04); }
+.orbitly-nav__mobile { display: none; }
+
+.orbitly-hero { position: relative; isolation: isolate; padding: 145px 0 26px; }
+.orbitly-hero::before { position: absolute; z-index: -1; inset: 0; background: radial-gradient(ellipse 55% 45% at 74% 36%,rgba(99,102,241,.13),transparent 75%), linear-gradient(180deg,rgba(3,3,5,.08),#030305 94%); content: ''; pointer-events: none; }
+.orbitly-hero__glow { position: absolute; z-index: -2; top: 110px; right: 5%; width: min(58vw,760px); height: 560px; border-radius: 50%; background: radial-gradient(ellipse,rgba(99,102,241,.11),rgba(139,92,246,.045) 42%,transparent 72%); filter: blur(24px); }
+.orbitly-hero__grid { display: grid; grid-template-columns: minmax(0,.86fr) minmax(480px,1.14fr); align-items: center; gap: 10px; }
+.orbitly-hero__copy { position: relative; z-index: 2; padding: 20px 0 28px; }
+.orbitly-hero__copy .badge-pill { margin-bottom: 24px; }
+.orbitly-hero__copy h1 { max-width: 650px; margin: 0; color: white; font-size: clamp(3.1rem,5.6vw,5rem); font-weight: 750; letter-spacing: -.057em; line-height: 1.01; }
+.orbitly-hero__copy > p { max-width: 530px; margin: 23px 0 25px; color: var(--orbitly-muted); font-size: clamp(1rem,1.2vw,1.15rem); line-height: 1.75; }
+.orbitly-hero__actions { display: flex; flex-wrap: wrap; gap: 11px; }
+.orbitly-hero__actions > a { display: inline-flex; min-height: 47px; align-items: center; justify-content: center; gap: 10px; padding: 0 19px; border-radius: 12px; color: white; font-size: 13px; font-weight: 600; text-decoration: none; }
+.orbitly-hero__assurance { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; color: rgba(255,255,255,.4); font-size: 11px; }
+.orbitly-hero__assurance i,.orbitly-agent__icon + span + i,.orbitly-report-preview__meta b::before,.orbitly-report-preview > header i b { width: 7px; height: 7px; border-radius: 50%; background: #818cf8; box-shadow: 0 0 12px rgba(129,140,248,.7); }
+.orbitly-hero__assurance span { color: rgba(255,255,255,.2); }
+
+.orbitly-network { position: relative; width: min(100%,620px); aspect-ratio: 1.08; justify-self: end; }
+.orbitly-network__halo { position: absolute; top: 49%; left: 50%; width: 62%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle,rgba(99,102,241,.18),rgba(139,92,246,.07) 42%,transparent 72%); filter: blur(16px); transform: translate(-50%,-50%); animation: orbitly-glow 5s ease-in-out infinite; }
+.orbitly-network__ring { position: absolute; top: 49%; left: 50%; border: 1px solid rgba(167,139,250,.14); border-radius: 50%; transform: translate(-50%,-50%); }
+.orbitly-network__ring--outer { width: 82%; aspect-ratio: 1; border-style: dashed; animation: orbitly-spin 80s linear infinite; }
+.orbitly-network__ring--inner { width: 60%; aspect-ratio: 1; border-color: rgba(129,140,248,.15); box-shadow: 0 0 55px rgba(99,102,241,.05),inset 0 0 50px rgba(99,102,241,.035); }
+.orbitly-network__wires { position: absolute; top: 6%; left: 8%; width: 84%; height: 84%; overflow: visible; }
+.orbitly-network__core { position: absolute; top: 49%; left: 50%; display: flex; width: 168px; min-height: 178px; flex-direction: column; align-items: center; justify-content: center; padding: 17px; border: 1px solid rgba(167,139,250,.23); border-radius: 22px; background: linear-gradient(150deg,rgba(22,17,41,.96),rgba(9,8,17,.94)); box-shadow: 0 22px 70px rgba(0,0,0,.5),0 0 56px rgba(99,102,241,.14),inset 0 1px rgba(255,255,255,.07); text-align: center; transform: translate(-50%,-50%); }
+.orbitly-network__core > span { display: grid; width: 42px; height: 42px; place-items: center; margin-bottom: 12px; border: 1px solid rgba(129,140,248,.24); border-radius: 13px; color: #c4b5fd; background: rgba(99,102,241,.15); }
+.orbitly-network__core small { color: #a5b4fc; font: 500 8px/1.4 'Fira Code',monospace; letter-spacing: .08em; }
+.orbitly-network__core strong { margin-top: 7px; color: white; font: 600 18px/1.13 'Outfit',sans-serif; letter-spacing: -.025em; }
+.orbitly-network__core i { display: flex; align-items: center; gap: 6px; margin-top: 13px; color: rgba(255,255,255,.48); font-size: 9px; font-style: normal; }
+.orbitly-network__core i b { width: 5px; height: 5px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 8px #8b5cf6; }
+.orbitly-agent { position: absolute; z-index: 2; display: flex; width: 194px; min-height: 56px; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid rgba(255,255,255,.09); border-radius: 14px; background: linear-gradient(130deg,rgba(17,15,29,.96),rgba(7,8,15,.91)); box-shadow: 0 15px 35px rgba(0,0,0,.35); opacity: 0; animation: orbitly-node-in .65s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: var(--orbit-delay); }
+.orbitly-agent--01 { top: 0; left: 50%; transform: translate(-50%,0); }
+.orbitly-agent--02 { top: 26%; right: -1%; }
+.orbitly-agent--03 { right: 7%; bottom: 10%; }
+.orbitly-agent--04 { bottom: 10%; left: 7%; }
+.orbitly-agent--05 { top: 26%; left: -1%; }
+.orbitly-agent__icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(129,140,248,.18); border-radius: 11px; color: #a5b4fc; background: rgba(99,102,241,.12); }
+.orbitly-agent--violet .orbitly-agent__icon { border-color: rgba(167,139,250,.2); color: #c4b5fd; background: rgba(139,92,246,.12); }
+.orbitly-agent--blue .orbitly-agent__icon { border-color: rgba(96,165,250,.2); color: #93c5fd; background: rgba(59,130,246,.12); }
+.orbitly-agent > span:nth-child(2) { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.orbitly-agent > span b { overflow: hidden; color: rgba(255,255,255,.88); font: 600 11px/1.2 'Outfit',sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.orbitly-agent > span small { color: rgba(255,255,255,.36); font: 8px/1 'Fira Code',monospace; letter-spacing: .09em; }
+.orbitly-agent > i { width: 5px; height: 5px; flex: 0 0 auto; border-radius: 50%; background: #8b82f6; box-shadow: 0 0 8px #8b82f6; }
+.orbitly-network__caption { position: absolute; right: 13%; bottom: 1%; left: 13%; display: flex; justify-content: space-between; color: rgba(255,255,255,.29); font: 8px/1 'Fira Code',monospace; letter-spacing: .1em; }
+.orbitly-proof-strip { display: flex; align-items: center; justify-content: center; gap: clamp(20px,5vw,72px); margin-top: 4px; padding: 20px 0 13px; border-top: 1px solid rgba(255,255,255,.055); }
+.orbitly-proof-strip > div { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.47); font-size: 12px; }
+.orbitly-proof-strip b { color: #c4b5fd; font: 700 22px/1 'Outfit',sans-serif; }
+.orbitly-proof-strip > div:nth-of-type(3) b { display: flex; }
+.orbitly-proof-strip > i { width: 1px; height: 24px; background: rgba(255,255,255,.1); }
+
+.orbitly-section { position: relative; padding: 100px 0; }
+.orbitly-section__heading { max-width: 760px; margin: 0 auto 48px; text-align: center; }
+.orbitly-section__heading .badge-pill { margin-bottom: 18px; }
+.orbitly-section__heading h2,.orbitly-evidence__copy h2 { margin: 0; color: white; font-size: clamp(2.35rem,4.3vw,3.65rem); font-weight: 700; letter-spacing: -.05em; line-height: 1.08; }
+.orbitly-section__heading p { max-width: 640px; margin: 15px auto 0; color: var(--orbitly-muted); font-size: 15px; line-height: 1.75; }
+.orbitly-agent-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 12px; }
+.orbitly-agent-card { grid-column: span 2; min-height: 222px; padding: 23px; border: 1px solid rgba(255,255,255,.065); border-radius: 17px; background: linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012)); }
+.orbitly-agent-card:nth-child(4) { grid-column: 2 / span 2; }
+.orbitly-agent-card:nth-child(5) { grid-column: 4 / span 2; }
+.orbitly-agent-card__top { display: flex; align-items: center; gap: 10px; }
+.orbitly-agent-card__top > span,.orbitly-capability__icon,.orbitly-principle > span { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(129,140,248,.18); border-radius: 12px; color: #a5b4fc; background: rgba(99,102,241,.11); }
+.orbitly-agent-card--violet .orbitly-agent-card__top > span { border-color: rgba(167,139,250,.2); color: #c4b5fd; background: rgba(139,92,246,.12); }
+.orbitly-agent-card--blue .orbitly-agent-card__top > span { border-color: rgba(96,165,250,.18); color: #93c5fd; background: rgba(59,130,246,.1); }
+.orbitly-agent-card__top small { flex: 1; color: rgba(255,255,255,.37); font: 9px/1 'Fira Code',monospace; letter-spacing: .12em; }
+.orbitly-agent-card__top > svg { color: rgba(255,255,255,.28); }
+.orbitly-agent-card h3,.orbitly-principle h3,.orbitly-capability h3 { margin: 20px 0 8px; color: #f6f3ff; font: 600 19px/1.25 'Outfit',sans-serif; letter-spacing: -.025em; }
+.orbitly-agent-card p,.orbitly-principle p,.orbitly-capability p { margin: 0; color: var(--orbitly-muted); font-size: 13px; line-height: 1.7; }
+.orbitly-agent-card__foot { display: flex; align-items: center; gap: 7px; margin-top: 19px; color: rgba(255,255,255,.33); font: 8px/1 'Fira Code',monospace; letter-spacing: .1em; }
+.orbitly-agent-card__foot i { width: 5px; height: 5px; border-radius: 50%; background: #8b82f6; }
+
+.orbitly-workflow { overflow: hidden; }
+.orbitly-workflow__grid { display: grid; grid-template-columns: .92fr 1.08fr; align-items: start; gap: clamp(38px,8vw,112px); }
+.orbitly-section__heading--left { position: sticky; top: 112px; margin: 0; text-align: left; }
+.orbitly-section__heading--left h2 { font-size: clamp(2.4rem,4.2vw,3.8rem); }
+.orbitly-section__heading--left p { margin: 18px 0 0; font-size: 16px; }
+.orbitly-workflow__stats { display: flex; gap: 12px; margin-top: 30px; }
+.orbitly-workflow__stats div { display: flex; min-width: 130px; flex-direction: column; gap: 7px; padding: 17px 18px; border: 1px solid rgba(255,255,255,.065); border-radius: 14px; background: rgba(255,255,255,.025); }
+.orbitly-workflow__stats b { color: #c4b5fd; font: 700 27px/1 'Outfit',sans-serif; }
+.orbitly-workflow__stats span { color: rgba(255,255,255,.48); font-size: 10px; }
+.orbitly-steps { display: flex; flex-direction: column; }
+.orbitly-step { position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding: 0 0 30px; }
+.orbitly-step:last-child { padding-bottom: 0; }
+.orbitly-step__icon { z-index: 1; display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(129,140,248,.2); border-radius: 13px; color: #a5b4fc; background: #0d0b17; }
+.orbitly-step__connector { position: absolute; top: 45px; bottom: 0; left: 20px; width: 1px; background: linear-gradient(#7770de66,#7770de09); }
+.orbitly-step > div { padding-top: 3px; }
+.orbitly-step small { color: rgba(255,255,255,.38); font: 9px/1.4 'Fira Code',monospace; letter-spacing: .13em; }
+.orbitly-step h3 { margin: 7px 0; color: #f6f3ff; font: 600 18px/1.3 'Outfit',sans-serif; }
+.orbitly-step p { margin: 0; color: var(--orbitly-muted); font-size: 13px; line-height: 1.7; }
+
+.orbitly-principle-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; }
+.orbitly-principle { min-height: 220px; padding: 24px; border: 1px solid rgba(255,255,255,.065); border-radius: 17px; background: rgba(255,255,255,.022); }
+.orbitly-principle > span { margin-bottom: 21px; }
+.orbitly-principle > small,.orbitly-capability > small { display: block; color: rgba(196,181,253,.62); font: 9px/1.3 'Fira Code',monospace; letter-spacing: .12em; }
+.orbitly-principle h3 { margin-top: 9px; }
+.orbitly-capability-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; }
+.orbitly-capability { position: relative; min-height: 220px; padding: 25px; border: 1px solid rgba(255,255,255,.065); border-radius: 17px; background: rgba(255,255,255,.022); overflow: hidden; }
+.orbitly-capability--wide { grid-row: span 2; min-height: 455px; padding: 29px; }
+.orbitly-capability__icon { margin-bottom: 17px; }
+.orbitly-capability__icon--violet { color: #c4b5fd; background: rgba(139,92,246,.12); border-color: rgba(167,139,250,.18); }
+.orbitly-capability__icon--cyan { color: #a5f3fc; background: rgba(34,211,238,.1); border-color: rgba(34,211,238,.16); }
+.orbitly-capability h3 { max-width: 500px; margin-top: 12px; font-size: 22px; }
+.orbitly-capability--wide > p { max-width: 510px; }
+.orbitly-input-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 31px; }
+.orbitly-input-pills span,.orbitly-input-pills b { display: inline-flex; align-items: center; gap: 7px; min-height: 35px; padding: 0 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; color: rgba(255,255,255,.7); background: rgba(255,255,255,.035); font-size: 10px; }
+.orbitly-input-pills span svg { color: #a5b4fc; }
+.orbitly-input-pills > svg { color: #b4a3ff; }
+.orbitly-input-pills b { border-color: rgba(129,140,248,.2); color: #c4b5fd; background: rgba(99,102,241,.1); }
+.orbitly-capability--wide em { position: absolute; bottom: 25px; left: 29px; color: rgba(255,255,255,.34); font-size: 10px; font-style: normal; }
+
+.orbitly-evidence__grid { display: grid; grid-template-columns: minmax(250px,.65fr) minmax(0,1.35fr); align-items: center; gap: clamp(28px,6vw,82px); }
+.orbitly-evidence__copy h2 { margin-top: 18px; font-size: clamp(2.2rem,4vw,3.25rem); }
+.orbitly-evidence__copy > p { margin: 18px 0 22px; color: var(--orbitly-muted); font-size: 15px; line-height: 1.8; }
+.orbitly-evidence__copy > div { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.45); font-size: 11px; }
+.orbitly-evidence__copy > div svg { color: #a5b4fc; }
+.orbitly-report-preview { overflow: hidden; border: 1px solid rgba(167,139,250,.17); border-radius: 19px; background: linear-gradient(140deg,rgba(20,17,33,.96),rgba(7,7,12,.97)); box-shadow: 0 25px 90px rgba(0,0,0,.42),0 0 70px rgba(99,102,241,.08); }
+.orbitly-report-preview > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 21px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.orbitly-report-preview > header > span { display: flex; align-items: center; gap: 9px; color: #f4f0ff; font: 600 11px/1 'Outfit',sans-serif; letter-spacing: .03em; }
+.orbitly-report-preview > header > span svg { color: #a5b4fc; }
+.orbitly-report-preview > header > i { display: flex; align-items: center; gap: 7px; color: rgba(255,255,255,.38); font: 8px/1 'Fira Code',monospace; font-style: normal; letter-spacing: .08em; }
+.orbitly-report-preview__body { padding: 21px; }
+.orbitly-report-preview__meta,.orbitly-report-preview__title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.orbitly-report-preview__meta small,.orbitly-report-preview__cause small,.orbitly-report-preview__title b,.orbitly-report-preview__title small,.orbitly-evidence-row small,.orbitly-report-preview__action small { color: rgba(255,255,255,.4); font: 9px/1.5 'Fira Code',monospace; letter-spacing: .07em; }
+.orbitly-report-preview__meta b { display: inline-flex; align-items: center; gap: 6px; color: #c4b5fd; font: 9px/1.4 'Fira Code',monospace; }
+.orbitly-report-preview__meta b::before { content: ''; }
+.orbitly-report-preview__cause { display: flex; justify-content: space-between; gap: 17px; margin: 17px 0 22px; padding: 17px; border: 1px solid rgba(129,140,248,.13); border-radius: 13px; background: linear-gradient(110deg,rgba(99,102,241,.1),rgba(139,92,246,.035)); }
+.orbitly-report-preview__cause p { max-width: 580px; margin: 7px 0 0; color: rgba(255,255,255,.83); font: 500 14px/1.55 'Outfit',sans-serif; }
+.orbitly-report-preview__cause > span { flex: 0 0 auto; color: #c4b5fd; font: 600 11px/1.4 'Outfit',sans-serif; text-align: right; }
+.orbitly-report-preview__cause > span small { display: block; margin-top: 4px; font: 8px/1.4 'Fira Code',monospace; }
+.orbitly-report-preview__title { margin-bottom: 9px; }
+.orbitly-report-preview__evidence { display: grid; grid-template-columns: 23px minmax(0,1fr) 16px; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.055); color: #a5b4fc; }
+.orbitly-report-preview__evidence--violet { color: #c4b5fd; }
+.orbitly-report-preview__evidence > div { display: flex; flex-direction: column; gap: 3px; }
+.orbitly-report-preview__evidence > div b { color: rgba(255,255,255,.85); font: 500 12px/1.3 'Outfit',sans-serif; }
+.orbitly-report-preview__evidence > div span { color: rgba(255,255,255,.38); font-size: 9px; }
+.orbitly-report-preview__action { margin-top: 15px; padding: 13px 15px; border-left: 2px solid #8177e9; border-radius: 0 9px 9px 0; background: rgba(255,255,255,.025); }
+.orbitly-report-preview__action p { margin: 6px 0 0; color: rgba(255,255,255,.63); font-size: 11px; line-height: 1.6; }
+.orbitly-report-preview > footer { padding: 0 21px 18px; color: rgba(255,255,255,.34); font-size: 9px; }
+.orbitly-alert-triangle { display: grid; width: 16px; height: 16px; place-items: center; border: 1px solid rgba(196,181,253,.55); border-radius: 50%; color: #c4b5fd; font: 600 10px/1 'Outfit',sans-serif; }
+
+.orbitly-cta-section { padding: 60px 0 100px; }
+.orbitly-cta-card { position: relative; isolation: isolate; max-width: 970px; margin: 0 auto; padding: clamp(40px,7vw,78px) 24px; border: 1px solid rgba(129,140,248,.24); border-radius: 26px; background: radial-gradient(ellipse 60% 60% at 50% 0%,rgba(99,102,241,.17),transparent 80%),linear-gradient(145deg,rgba(99,102,241,.08),rgba(139,92,246,.035) 45%,rgba(255,255,255,.015)); box-shadow: 0 0 80px rgba(99,102,241,.08),inset 0 1px rgba(255,255,255,.06); text-align: center; overflow: hidden; }
+.orbitly-cta-card .badge-pill { margin-bottom: 20px; }
+.orbitly-cta-card h2 { margin: 0; color: white; font: 700 clamp(2.5rem,5vw,4.15rem)/1.04 'Outfit',sans-serif; letter-spacing: -.05em; }
+.orbitly-cta-card p { max-width: 570px; margin: 16px auto 25px; color: var(--orbitly-muted); font-size: 14px; line-height: 1.75; }
+.orbitly-cta-card > a { display: inline-flex; min-height: 46px; align-items: center; gap: 9px; padding: 0 19px; border-radius: 11px; color: white; font-size: 13px; font-weight: 600; text-decoration: none; }
+.orbitly-footer { border-top: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.012); }
+.orbitly-footer > .container { display: flex; min-height: 78px; flex-wrap: wrap; align-items: center; gap: 20px; padding-top: 17px; padding-bottom: 17px; }
+.orbitly-footer p { flex: 1; margin: 0; color: rgba(255,255,255,.38); font-size: 10px; }
+.orbitly-footer > .container > a:not(.orbitly-brand) { display: inline-flex; align-items: center; gap: 7px; color: rgba(255,255,255,.52); font-size: 10px; text-decoration: none; }
+.orbitly-footer small { color: rgba(255,255,255,.3); font-size: 9px; }
+
+@keyframes orbitly-spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes orbitly-glow { 0%,100% { opacity: .65; transform: translate(-50%,-50%) scale(.94); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.06); } }
+@keyframes orbitly-node-in { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+
+@media (max-width: 1050px) {
+  .orbitly-hero__grid { grid-template-columns: minmax(0,.9fr) minmax(400px,1.1fr); }
+  .orbitly-agent { width: 174px; }
+  .orbitly-agent--02 { right: -2%; }
+  .orbitly-agent--05 { left: -2%; }
+}
+@media (max-width: 800px) {
+  .orbitly-nav__links,.orbitly-nav__cta { display: none; }
+  .orbitly-nav__toggle { display: grid; place-items: center; }
+  .orbitly-nav__mobile { display: flex; position: absolute; top: calc(100% + 5px); right: 20px; left: 20px; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid rgba(255,255,255,.09); border-radius: 17px; background: rgba(10,9,17,.97); box-shadow: 0 20px 70px rgba(0,0,0,.5); backdrop-filter: blur(18px); }
+  .orbitly-nav__mobile > a:not(.btn-primary) { padding: 12px; border-radius: 9px; color: rgba(255,255,255,.72); font-size: 13px; text-decoration: none; }
+  .orbitly-nav__mobile .btn-primary { display: inline-flex; min-height: 43px; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; border-radius: 10px; color: white; font-size: 12px; text-decoration: none; }
+  .orbitly-hero { padding-top: 120px; }
+  .orbitly-hero__grid { grid-template-columns: 1fr; gap: 4px; }
+  .orbitly-hero__copy { text-align: center; }
+  .orbitly-hero__copy > p { margin-right: auto; margin-left: auto; }
+  .orbitly-hero__actions { justify-content: center; }
+  .orbitly-hero__assurance { justify-content: center; }
+  .orbitly-network { width: min(100%,560px); justify-self: center; }
+  .orbitly-proof-strip { margin-top: 10px; }
+  .orbitly-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .orbitly-agent-card,.orbitly-agent-card:nth-child(4),.orbitly-agent-card:nth-child(5) { grid-column: auto; }
+  .orbitly-agent-card:last-child { grid-column: 1 / -1; }
+  .orbitly-workflow__grid { grid-template-columns: 1fr; gap: 36px; }
+  .orbitly-section__heading--left { position: static; }
+  .orbitly-principle-grid { grid-template-columns: 1fr; }
+  .orbitly-principle { min-height: auto; }
+  .orbitly-evidence__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .orbitly-hero { padding-top: 108px; }
+  .orbitly-hero__copy h1 { font-size: clamp(2.6rem,12vw,3.8rem); }
+  .orbitly-hero__copy .badge-pill { font-size: 9px; }
+  .orbitly-hero__actions { flex-direction: column; align-items: stretch; }
+  .orbitly-hero__assurance { gap: 7px; font-size: 9px; }
+  .orbitly-network { width: 112%; margin-left: -6%; }
+  .orbitly-agent { width: 148px; min-height: 49px; gap: 7px; padding: 7px; }
+  .orbitly-agent__icon { width: 29px; height: 29px; }
+  .orbitly-agent > span b { font-size: 9px; }
+  .orbitly-agent > span small { font-size: 7px; }
+  .orbitly-agent--02 { right: -2%; }
+  .orbitly-agent--03 { right: -1%; bottom: 9%; }
+  .orbitly-agent--04 { bottom: 9%; left: -1%; }
+  .orbitly-agent--05 { left: -2%; }
+  .orbitly-network__core { width: 140px; min-height: 151px; }
+  .orbitly-network__caption { right: 8%; left: 8%; font-size: 6px; }
+  .orbitly-proof-strip { flex-wrap: wrap; justify-content: space-around; gap: 12px; }
+  .orbitly-proof-strip > div { gap: 7px; font-size: 9px; }
+  .orbitly-proof-strip b { font-size: 19px; }
+  .orbitly-proof-strip > i { display: none; }
+  .orbitly-section { padding: 72px 0; }
+  .orbitly-section__heading { margin-bottom: 32px; }
+  .orbitly-section__heading h2,.orbitly-evidence__copy h2 { font-size: clamp(2.15rem,10vw,3rem); }
+  .orbitly-section__heading p { font-size: 13px; }
+  .orbitly-agent-grid,.orbitly-capability-grid { grid-template-columns: 1fr; }
+  .orbitly-agent-card,.orbitly-agent-card:last-child { grid-column: auto; min-height: 190px; }
+  .orbitly-capability--wide { grid-row: auto; min-height: 300px; }
+  .orbitly-capability--wide em { right: 20px; left: 24px; bottom: 20px; line-height: 1.5; }
+  .orbitly-capability { min-height: auto; }
+  .orbitly-input-pills { gap: 6px; }
+  .orbitly-input-pills span,.orbitly-input-pills b { font-size: 9px; }
+  .orbitly-workflow__stats { gap: 8px; }
+  .orbitly-workflow__stats div { min-width: 0; flex: 1; padding: 14px; }
+  .orbitly-report-preview > header { align-items: flex-start; padding: 14px; }
+  .orbitly-report-preview > header > i { font-size: 7px; }
+  .orbitly-report-preview__body { padding: 14px; }
+  .orbitly-report-preview__cause { flex-direction: column; }
+  .orbitly-report-preview__cause > span { text-align: left; }
+  .orbitly-report-preview__title b { font-size: 8px; }
+  .orbitly-cta-section { padding: 25px 0 72px; }
+  .orbitly-cta-card { padding: 40px 17px; border-radius: 20px; }
+  .orbitly-footer > .container { gap: 12px; }
+  .orbitly-footer p { flex-basis: calc(100% - 170px); }
+  .orbitly-footer small { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbitly-network__halo,.orbitly-network__ring--outer,.orbitly-agent { animation: none; }
+  .orbitly-agent { opacity: 1; }
+  *,*::before,*::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
