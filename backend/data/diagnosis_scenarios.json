@@ -1,0 +1,564 @@
+[
+  {
+    "id": "normal_network",
+    "description": "Low utilization, healthy devices, and reachable endpoints on an up link.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-normal-001",
+        "samples": [
+          {
+            "device_id": "RTR-N1",
+            "interface_id": "xe-0/0/0",
+            "latency_ms": 18,
+            "jitter_ms": 2,
+            "packet_loss_pct": 0,
+            "throughput_mbps": 220,
+            "link_utilization_pct": 32
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-normal-001",
+        "samples": [
+          {
+            "device_id": "RTR-N1",
+            "interface_id": "xe-0/0/0",
+            "cpu_utilization_pct": 28,
+            "memory_utilization_pct": 46,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "online"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-normal-001",
+        "devices": [
+          {"device_id": "RTR-N1", "segment_id": "core", "reachability": "reachable"},
+          {"device_id": "SW-N1", "segment_id": "core", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-N1", "source_device_id": "RTR-N1", "target_device_id": "SW-N1", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "no_fault_detected",
+      "root_cause": null,
+      "conflicts": 0,
+      "affected_devices": [],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "network_congestion",
+    "description": "Elevated delay, jitter, packet loss, and queue drops on the same router interface.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-congestion-002",
+        "samples": [
+          {
+            "device_id": "RTR-C2",
+            "interface_id": "xe-0/0/1",
+            "latency_ms": 185,
+            "jitter_ms": 42,
+            "packet_loss_pct": 2.4,
+            "throughput_mbps": 890,
+            "link_utilization_pct": 96
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-congestion-002",
+        "samples": [
+          {
+            "device_id": "RTR-C2",
+            "interface_id": "xe-0/0/1",
+            "cpu_utilization_pct": 54,
+            "memory_utilization_pct": 61,
+            "interface_errors": 0,
+            "egress_queue_drops": 18,
+            "device_status": "online"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-congestion-002",
+        "devices": [
+          {"device_id": "RTR-C2", "segment_id": "branch-east", "reachability": "reachable"},
+          {"device_id": "SW-C2", "segment_id": "branch-east", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-C2", "source_device_id": "RTR-C2", "target_device_id": "SW-C2", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "interface_or_queue_drops",
+      "conflicts": 0,
+      "affected_devices": ["RTR-C2"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "router_infrastructure_overload",
+    "description": "A busy edge router has critical CPU and memory use alongside high latency and jitter.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-overload-003",
+        "samples": [
+          {
+            "device_id": "RTR-O3",
+            "interface_id": "xe-0/0/2",
+            "latency_ms": 310,
+            "jitter_ms": 58,
+            "packet_loss_pct": 1.5,
+            "throughput_mbps": 740,
+            "link_utilization_pct": 78
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-overload-003",
+        "samples": [
+          {
+            "device_id": "RTR-O3",
+            "interface_id": "xe-0/0/2",
+            "cpu_utilization_pct": 98,
+            "memory_utilization_pct": 96,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "degraded"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-overload-003",
+        "devices": [
+          {"device_id": "RTR-O3", "segment_id": "datacenter", "reachability": "reachable"},
+          {"device_id": "SW-O3", "segment_id": "datacenter", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-O3", "source_device_id": "RTR-O3", "target_device_id": "SW-O3", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "device_resource_exhaustion",
+      "conflicts": 0,
+      "affected_devices": ["RTR-O3"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "broken_connectivity",
+    "description": "High delay and loss coincide with a reported down inter-segment link.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-connectivity-004",
+        "samples": [
+          {
+            "device_id": "RTR-B4",
+            "interface_id": "xe-0/0/3",
+            "latency_ms": 290,
+            "jitter_ms": 38,
+            "packet_loss_pct": 5.2,
+            "throughput_mbps": 180,
+            "link_utilization_pct": 55
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-connectivity-004",
+        "samples": [
+          {
+            "device_id": "RTR-B4",
+            "interface_id": "xe-0/0/3",
+            "cpu_utilization_pct": 42,
+            "memory_utilization_pct": 52,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "online"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-connectivity-004",
+        "devices": [
+          {"device_id": "RTR-B4", "segment_id": "campus", "reachability": "reachable"},
+          {"device_id": "RTR-B5", "segment_id": "remote", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-B4-B5", "source_device_id": "RTR-B4", "target_device_id": "RTR-B5", "status": "down"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "connectivity_path_failure",
+      "conflicts": 0,
+      "affected_devices": ["RTR-B4", "RTR-B5"],
+      "affected_links": ["L-B4-B5"],
+      "affected_segments": ["campus", "remote"]
+    }
+  },
+  {
+    "id": "conflicting_device_state",
+    "description": "Infrastructure reports a router online while connectivity reports it unreachable.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-conflict-005",
+        "samples": [
+          {
+            "device_id": "RTR-X5",
+            "latency_ms": 20,
+            "jitter_ms": 2,
+            "packet_loss_pct": 0,
+            "throughput_mbps": 160,
+            "link_utilization_pct": 25
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-conflict-005",
+        "samples": [
+          {"device_id": "RTR-X5", "device_status": "online"}
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-conflict-005",
+        "devices": [
+          {"device_id": "RTR-X5", "segment_id": "branch-west", "reachability": "unreachable"},
+          {"device_id": "SW-X5", "segment_id": "branch-west", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-X5", "source_device_id": "RTR-X5", "target_device_id": "SW-X5", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "insufficient_evidence",
+      "root_cause": null,
+      "conflicts": 1,
+      "affected_devices": [],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "incomplete_telemetry",
+    "description": "Only throughput and partial device/link state are available; there is no confirmed fault.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-incomplete-006",
+        "samples": [
+          {"device_id": "RTR-I6", "throughput_mbps": 120}
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-incomplete-006",
+        "samples": [
+          {"device_id": "RTR-I6", "memory_utilization_pct": 48}
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-incomplete-006",
+        "devices": [
+          {"device_id": "RTR-I6", "segment_id": "branch-north", "reachability": "unknown"},
+          {"device_id": "SW-I6", "segment_id": "branch-north"}
+        ],
+        "links": [
+          {"link_id": "L-I6", "source_device_id": "RTR-I6", "target_device_id": "SW-I6"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "insufficient_evidence",
+      "root_cause": null,
+      "conflicts": 0,
+      "affected_devices": [],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "link_congestion",
+    "description": "High link utilization, elevated latency and egress queue drops on a congested router link.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-congestion-002",
+        "samples": [
+          {
+            "device_id": "RTR-C2",
+            "interface_id": "xe-0/0/1",
+            "latency_ms": 185,
+            "jitter_ms": 42,
+            "packet_loss_pct": 2.4,
+            "throughput_mbps": 890,
+            "link_utilization_pct": 96
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-congestion-002",
+        "samples": [
+          {
+            "device_id": "RTR-C2",
+            "interface_id": "xe-0/0/1",
+            "cpu_utilization_pct": 54,
+            "memory_utilization_pct": 61,
+            "interface_errors": 0,
+            "egress_queue_drops": 18,
+            "device_status": "online"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-congestion-002",
+        "devices": [
+          {"device_id": "RTR-C2", "segment_id": "branch-east", "reachability": "reachable"},
+          {"device_id": "SW-C2", "segment_id": "branch-east", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-C2", "source_device_id": "RTR-C2", "target_device_id": "SW-C2", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "interface_or_queue_drops",
+      "conflicts": 0,
+      "affected_devices": ["RTR-C2"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "weak_wifi_signal",
+    "description": "A wireless client experiences poor Wi-Fi RSSI signal strength coinciding with high packet loss and latency.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-wifi-007",
+        "samples": [
+          {
+            "device_id": "AP-W3",
+            "interface_id": "wlan0",
+            "rssi_dbm": -84,
+            "packet_loss_pct": 5.8,
+            "latency_ms": 195,
+            "jitter_ms": 45,
+            "throughput_mbps": 25,
+            "link_utilization_pct": 40
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-wifi-007",
+        "samples": [
+          {
+            "device_id": "AP-W3",
+            "interface_id": "wlan0",
+            "cpu_utilization_pct": 32,
+            "memory_utilization_pct": 41,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "degraded"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-wifi-007",
+        "devices": [
+          {"device_id": "AP-W3", "segment_id": "wireless-branch", "reachability": "reachable"},
+          {"device_id": "STA-W3", "segment_id": "wireless-branch", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-W3", "source_device_id": "AP-W3", "target_device_id": "STA-W3", "status": "up", "medium": "wifi"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "weak_wifi_signal",
+      "conflicts": 0,
+      "affected_devices": ["AP-W3"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "ethernet_interface_fault",
+    "description": "High interface errors (CRC/framing) and packet loss on a physical switch port while queue drops remain zero.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-eth-008",
+        "samples": [
+          {
+            "device_id": "SW-E4",
+            "interface_id": "eth1",
+            "latency_ms": 22,
+            "jitter_ms": 3,
+            "packet_loss_pct": 4.6,
+            "throughput_mbps": 450,
+            "link_utilization_pct": 20
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-eth-008",
+        "samples": [
+          {
+            "device_id": "SW-E4",
+            "interface_id": "eth1",
+            "cpu_utilization_pct": 26,
+            "memory_utilization_pct": 38,
+            "interface_errors": 72,
+            "egress_queue_drops": 0,
+            "device_status": "online"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-eth-008",
+        "devices": [
+          {"device_id": "SW-E4", "segment_id": "distribution", "reachability": "reachable"},
+          {"device_id": "RTR-E4", "segment_id": "distribution", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-E4", "source_device_id": "SW-E4", "target_device_id": "RTR-E4", "status": "up", "medium": "ethernet"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "ethernet_interface_fault",
+      "conflicts": 0,
+      "affected_devices": ["SW-E4"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "dns_dhcp_failure",
+    "description": "Severe DNS lookup resolution timeout and DHCP lease failure while underlying IP connectivity remains operational.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-services-009",
+        "samples": [
+          {
+            "device_id": "SRV-D5",
+            "interface_id": "eth0",
+            "dns_lookup_time_ms": 4800,
+            "latency_ms": 14,
+            "jitter_ms": 2,
+            "packet_loss_pct": 0,
+            "throughput_mbps": 500,
+            "link_utilization_pct": 15
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-services-009",
+        "samples": [
+          {
+            "device_id": "SRV-D5",
+            "interface_id": "eth0",
+            "cpu_utilization_pct": 30,
+            "memory_utilization_pct": 42,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "online",
+            "dhcp_status": "failed"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-services-009",
+        "devices": [
+          {"device_id": "SRV-D5", "segment_id": "services-lan", "reachability": "reachable"},
+          {"device_id": "GW-D5", "segment_id": "services-lan", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-D5", "source_device_id": "SRV-D5", "target_device_id": "GW-D5", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "dns_dhcp_failure",
+      "conflicts": 0,
+      "affected_devices": ["SRV-D5"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  },
+  {
+    "id": "interoperability_failure",
+    "description": "Telemetry reports an interoperability failure caused by an incompatible schema version between collaborating network elements.",
+    "request": {
+      "performance": {
+        "diagnosis_id": "scenario-interop-010",
+        "samples": [
+          {
+            "device_id": "GW-INT6",
+            "interface_id": "ge-0/0/0",
+            "latency_ms": 24,
+            "jitter_ms": 3,
+            "packet_loss_pct": 3.8,
+            "throughput_mbps": 300,
+            "link_utilization_pct": 25
+          }
+        ]
+      },
+      "infrastructure": {
+        "diagnosis_id": "scenario-interop-010",
+        "samples": [
+          {
+            "device_id": "GW-INT6",
+            "interface_id": "ge-0/0/0",
+            "cpu_utilization_pct": 25,
+            "memory_utilization_pct": 35,
+            "interface_errors": 0,
+            "egress_queue_drops": 0,
+            "device_status": "degraded",
+            "interoperability_status": "incompatible"
+          }
+        ]
+      },
+      "connectivity": {
+        "diagnosis_id": "scenario-interop-010",
+        "devices": [
+          {"device_id": "GW-INT6", "segment_id": "dmz", "reachability": "reachable"},
+          {"device_id": "RTR-EXT", "segment_id": "dmz", "reachability": "reachable"}
+        ],
+        "links": [
+          {"link_id": "L-INT6", "source_device_id": "GW-INT6", "target_device_id": "RTR-EXT", "status": "up"}
+        ]
+      }
+    },
+    "expected": {
+      "workflow_status": "complete",
+      "incident_status": "probable_cause",
+      "root_cause": "interoperability_failure",
+      "conflicts": 0,
+      "affected_devices": ["GW-INT6"],
+      "affected_links": [],
+      "affected_segments": []
+    }
+  }
+]
