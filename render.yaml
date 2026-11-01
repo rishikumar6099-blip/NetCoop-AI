@@ -1,36 +1,24 @@
 services:
-  # NetCoop AI FastAPI Backend Web Service
+  # NetCoop AI Unified Web Service (FastAPI + React SPA + SQLite)
   - type: web
-    name: netcoop-ai-backend
-    runtime: python
+    name: netcoop-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     region: oregon
     plan: standard
     branch: main
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     disk:
       name: netcoop-data
       mountPath: /var/data
       sizeGB: 1
     envVars:
+      - key: PORT
+        value: "8000"
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: NETCOOP_DB_PATH
         value: /var/data/netcoop.db
       - key: ALLOWED_ORIGINS
         value: "*"
-
-  # NetCoop AI React + Vite Frontend Static Site
-  - type: web
-    name: netcoop-ai-frontend
-    runtime: static
-    region: oregon
-    plan: free
-    branch: main
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html

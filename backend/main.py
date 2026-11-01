@@ -1,8 +1,11 @@
 """FastAPI application entry point for NetCoop AI."""
 
 import os
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.agents.performance_agent import PerformanceAgent
 from backend.agents.infrastructure_agent import InfrastructureHealthAgent
@@ -15,6 +18,11 @@ from backend.models.infrastructure import InfrastructureTelemetryBatch
 from backend.models.telemetry import TelemetryBatch
 from backend.orchestrator.diagnosis_orchestrator import MultiAgentOrchestrator
 from backend.storage.repository import DiagnosisRepository
+from backend.models.interoperability import (
+    InteropValidationRequest,
+    InteropValidationResponse,
+)
+from backend.services.interoperability import validate_interoperability
 
 app = FastAPI(
     title="NetCoop AI API",
@@ -33,17 +41,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/", tags=["health"])
-def root_status() -> dict[str, str]:
-    """Report API readiness and documentation link."""
-    return {
-        "status": "online",
-        "service": "NetCoop AI API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health",
-    }
+FRONTEND_DIST = Path(
+    os.environ.get(
+        "FRONTEND_DIST_PATH",
+        Path(__file__).resolve().parent.parent / "frontend" / "dist",
+    )
+)
 
 
 @app.get("/health", tags=["health"])
@@ -103,13 +106,6 @@ def get_diagnosis_by_id(diagnosis_id: str) -> DiagnosisRecord:
     return DiagnosisRecord.model_validate(record)
 
 
-from backend.models.interoperability import (
-    InteropValidationRequest,
-    InteropValidationResponse,
-)
-from backend.services.interoperability import validate_interoperability
-
-
 @app.post(
     "/api/interop/validate",
     response_model=InteropValidationResponse,
@@ -125,3 +121,51 @@ def validate_telemetry_interoperability(
         schema_version=request.schema_version,
     )
     return InteropValidationResponse.model_validate(result)
+
+
+# Mount static assets (/assets/...) from frontend build
+assets_dir = FRONTEND_DIST / "assets"
+if assets_dir.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+
+@app.get("/", tags=["frontend"])
+def root_endpoint():
+    """Serve the React landing page when built, or API readiness status."""
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.is_file():
+        return FileResponse(str(index_file))
+    return {
+        "status": "online",
+        "service": "NetCoop AI API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def serve_spa(full_path: str):
+    """Serve static assets or fallback to index.html for React SPA client-side routing."""
+    # Never intercept API endpoints, health check, docs, or OpenAPI schemas
+    if (
+        full_path.startswith("api/")
+        or full_path == "api"
+        or full_path == "health"
+        or full_path.startswith("docs")
+        or full_path.startswith("openapi")
+        or full_path.startswith("redoc")
+    ):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    # Serve existing static files in frontend/dist (e.g. favicon.svg, icons.svg)
+    file_path = FRONTEND_DIST / full_path
+    if file_path.is_file():
+        return FileResponse(str(file_path))
+
+    # SPA routing fallback for client-side pages (e.g. /dashboard, /dashboard/reports, etc.)
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.is_file():
+        return FileResponse(str(index_file))
+
+    raise HTTPException(status_code=404, detail="Not Found")
